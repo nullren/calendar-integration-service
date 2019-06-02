@@ -36,6 +36,12 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>net.logstash.logback</groupId>
+      <artifactId>logstash-logback-encoder</artifactId>
+      <version>5.3</version>
+    </dependency>
+
     <!-- not sure why there are not pulled from openapi-generator -->
     <dependency>
       <groupId>io.springfox</groupId>
