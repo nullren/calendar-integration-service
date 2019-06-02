@@ -39,7 +39,7 @@ public class CISConfiguration {
   @Qualifier("redirectUri")
   @Profile("local")
   public String getLocalRedirectUri() {
-    return "http://localhost:5000/authorize/google";
+    return "http://localhost:8080/authorize/google";
   }
 
   @Bean

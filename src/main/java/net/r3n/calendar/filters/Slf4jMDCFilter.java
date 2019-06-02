@@ -1,4 +1,4 @@
-package net.r3n.calendar.logging;
+package net.r3n.calendar.filters;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
