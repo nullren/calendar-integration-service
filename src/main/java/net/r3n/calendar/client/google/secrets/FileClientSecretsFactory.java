@@ -3,7 +3,9 @@ package net.r3n.calendar.client.google.secrets;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -22,10 +24,12 @@ import java.io.StringReader;
  * in any capacity.
  */
 @Component
+@RequiredArgsConstructor
 @Profile("local")
 public class FileClientSecretsFactory implements FactoryBean<GoogleClientSecrets> {
-  private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
   private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
+
+  @Autowired private final JsonFactory jsonFactory;
 
   @Override
   public GoogleClientSecrets getObject() {
@@ -34,7 +38,7 @@ public class FileClientSecretsFactory implements FactoryBean<GoogleClientSecrets
       throw new RuntimeException("Resource not found: " + CREDENTIALS_FILE_PATH);
     }
     try {
-      return GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
+      return GoogleClientSecrets.load(jsonFactory, new InputStreamReader(in));
     } catch (IOException e) {
       throw new RuntimeException("Failed to parse secrets", e);
     }

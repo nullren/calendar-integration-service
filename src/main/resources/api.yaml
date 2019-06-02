@@ -32,6 +32,41 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequestError'
 
+  /authorize:
+    post:
+      summary: set up new oauth access
+      operationId: newAuthorization
+      description: >-
+        This API will return a URI to Google to complete access authorization.
+      responses:
+        '200':
+          description: A new authorization object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewAuthorizationResponse'
+
+  /authorize/google:
+    get:
+      summary: presents API tokens after successful Google OAuth response
+      operationId: googleOauthCallback
+      parameters:
+        - in: query
+          name: code
+          schema:
+            type: string
+        - in: query
+          name: state
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A new access token object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewAccessTokenResponse'
+
 components:
   schemas:
     EchoResponse:
@@ -44,6 +79,20 @@ components:
           type: string
           format: date-time
           example: '2016-08-29T09:12:33.001Z'
+
+    NewAuthorizationResponse:
+      type: object
+      properties:
+        googleOauthUri:
+          type: string
+          format: uri
+
+    NewAccessTokenResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          format: uuid
 
   responses:
     BadRequestError:
