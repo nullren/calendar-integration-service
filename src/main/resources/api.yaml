@@ -1,0 +1,52 @@
+openapi: 3.0.0
+servers:
+  - description: Local deployment
+    url: http://localhost:5000
+info:
+  description: API to integrate with Google's calendar service
+  version: "0.0.1"
+  title: Calendar Integration Service
+paths:
+  /echo:
+    get:
+      summary: repeats back what you send with the current time stamp
+      operationId: echo
+      description: >-
+        By passing some value in the query string, this will send back the same
+        data along with the current time. Useful for testing readiness and
+        liveness.
+      parameters:
+        - in: query
+          name: value
+          description: pass an optional search string for looking up inventory
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: returned data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EchoResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+
+components:
+  schemas:
+    EchoResponse:
+      type: object
+      properties:
+        value:
+          type: string
+          example: 'Hello, world!'
+        timestamp:
+          type: string
+          format: date-time
+          example: '2016-08-29T09:12:33.001Z'
+
+  responses:
+    BadRequestError:
+      description: Missing or invalid request
+    UnauthorizedError:
+      description: Access token is missing or invalid
