@@ -72,7 +72,7 @@ paths:
       summary: lists events for given date range (or today)
       security:
         - bearerAuth: []
-      operationId: nextEvents
+      operationId: listEvents
       parameters:
         - in: query
           name: start
@@ -102,7 +102,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NextEvents'
+                $ref: '#/components/schemas/ListEvents'
 
 components:
   schemas:
@@ -154,7 +154,7 @@ components:
             type: string
             format: email
 
-    NextEvents:
+    ListEvents:
       type: object
       properties:
         nextToken:

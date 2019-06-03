@@ -2,9 +2,14 @@
   <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
     <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
   </appender>
-  <logger name="jsonLogger" additivity="false" level="DEBUG">
-    <appender-ref ref="consoleAppender"/>
-  </logger>
+
+  <springProfile name="heroku">
+    <logger name="net.r3n" level="INFO" />
+  </springProfile>
+  <springProfile name="local">
+    <logger name="net.r3n" level="DEBUG" />
+  </springProfile>
+
   <root level="INFO">
     <appender-ref ref="consoleAppender"/>
   </root>

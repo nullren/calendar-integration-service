@@ -1,16 +1,14 @@
 package net.r3n.calendar.api;
 
-import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.services.calendar.model.EventDateTime;
-import com.google.api.services.calendar.model.Events;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.r3n.calendar.client.google.CalendarFactory;
-import net.r3n.calendar.filters.AccessTokenFilter;
+import net.r3n.calendar.errors.UnauthorizedUserException;
 import net.r3n.calendar.generated.api.EventsApi;
 import net.r3n.calendar.generated.model.Event;
-import net.r3n.calendar.generated.model.NextEvents;
-import net.r3n.calendar.logic.CalendarQueries;
+import net.r3n.calendar.generated.model.ListEvents;
+import net.r3n.calendar.logic.EventsLookup;
+import net.r3n.calendar.logic.EventsLookupFactory;
+import net.r3n.calendar.logic.types.InternalEvents;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,79 +16,91 @@ import org.springframework.stereotype.Controller;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.io.IOException;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static net.r3n.calendar.api.AccessTokenUtils.getBearerToken;
 
 @Slf4j
 @RequiredArgsConstructor
 @Controller
 public class EventsApiImpl implements EventsApi {
   @Autowired private final HttpServletRequest request;
-  @Autowired private final CalendarFactory calendarFactory;
+  @Autowired private final EventsLookupFactory eventsLookupFactory;
 
-  private OffsetDateTime fromDateTime(final EventDateTime dateTime) {
-    final String timezone = dateTime.getTimeZone();
-    final ZoneId zone = timezone == null
-      ? ZoneId.systemDefault()
-      : ZoneId.of(timezone);
-    final Instant instant =
-      Instant.ofEpochMilli(dateTime.getDateTime().getValue());
-    return OffsetDateTime.ofInstant(instant, zone);
+  private static Instant startOfDay(final LocalDate date, final ZoneId zone) {
+    return Optional.ofNullable(date).orElse(LocalDate.now())
+      .atStartOfDay(zone).toInstant();
   }
 
-  @Override
-  public ResponseEntity<NextEvents> nextEvents(
-    @Valid LocalDate start,
-    @Valid LocalDate end,
-    @Valid String timezone,
-    @Valid String nextToken)
-  {
-    log.info("loading events from calendar...");
+  private static Instant endOfDay(final LocalDate date, final ZoneId zone) {
+    return Optional.ofNullable(date).orElse(LocalDate.now())
+      .atTime(LocalTime.MIDNIGHT).atZone(zone).toInstant();
+  }
 
-    final Credential credential = AccessTokenFilter.getCredential(request);
-    if (credential == null) {
-      return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-    }
-
-    try {
-      // normalize input
-      final ZoneId zone = timezone == null
-        ? ZoneId.systemDefault()
-        : ZoneId.of(timezone);
-//      final LocalDate today = LocalDate.now(zone);
-//      final LocalDate startDay = Optional.ofNullable(start).orElse(today);
-//      final LocalDate endDay = Optional.ofNullable(end).orElse(today);
-
-      final NextEvents response = new NextEvents();
-
-      final Events events = CalendarQueries.of(calendarFactory.makeCalendar(credential))
-        .getTodaysEvents(zone, nextToken);
-
-      response.setNextToken(events.getNextPageToken());
-      response.setEvents(events.getItems()
+  private static ListEvents transform(final InternalEvents events) {
+    return new ListEvents()
+      .nextToken(events.getNextToken())
+      .events(events.getEvents()
         .stream()
         .map(e -> {
-          final OffsetDateTime startTime = fromDateTime(e.getStart());
-          final OffsetDateTime endTime = fromDateTime(e.getEnd());
+          final OffsetDateTime startTime = e.getStartTime().toOffsetDateTime();
+          final OffsetDateTime endTime = e.getEndTime().toOffsetDateTime();
           return new Event()
             .startTime(startTime)
             .endTime(endTime)
             .description(e.getDescription())
             .location(e.getLocation())
-            .title(e.getSummary());
+            .internalAttendeesOnly(e.isInternalOnly())
+            .attendees(e.getAttendeeEmails())
+            .title(e.getTitle());
         }).collect(Collectors.toList()));
+  }
 
-      log.info("response set");
+  @Override
+  public ResponseEntity<ListEvents> listEvents(
+    @Valid LocalDate startDate,
+    @Valid LocalDate endDate,
+    @Valid String timezone,
+    @Valid String nextToken)
+  {
+    log.info("loading events from calendar...");
 
+    try {
+      log.debug("fetching token");
+      final String token = getBearerToken(request);
+      final EventsLookup eventsLookup =
+        eventsLookupFactory.makeEventsLookup(token);
+
+      log.debug("fetching timezone");
+      final ZoneId zone = timezone == null
+        ? ZoneId.systemDefault()
+        // throws DateTimeException
+        : ZoneId.of(timezone);
+
+      log.debug("setting times");
+      final Instant start = startOfDay(startDate, zone);
+      final Instant end = endOfDay(endDate, zone);
+
+      log.debug("fetching events");
+      final InternalEvents events =
+        eventsLookup.getByDate(start, end, nextToken);
+
+      log.debug("transforming output");
+      final ListEvents response = transform(events);
       return new ResponseEntity<>(response, HttpStatus.OK);
+
+    } catch (UnauthorizedUserException e) {
+      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     } catch (DateTimeException e) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    } catch (IOException e) {
+    } catch (Exception e) {
       log.error("failed to fetch items", e);
       return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
