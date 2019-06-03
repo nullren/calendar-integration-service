@@ -53,11 +53,6 @@
       <artifactId>google-api-services-calendar</artifactId>
       <version>v3-rev378-1.25.0</version>
     </dependency>
-    <dependency>
-      <groupId>com.google.oauth-client</groupId>
-      <artifactId>google-oauth-client-jetty</artifactId>
-      <version>1.25.0</version>
-    </dependency>
 
     <!-- not sure why there are not pulled from openapi-generator -->
     <dependency>
