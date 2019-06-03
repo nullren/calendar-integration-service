@@ -69,10 +69,33 @@ paths:
 
   /events:
     get:
+      summary: lists events for given date range (or today)
       security:
         - bearerAuth: []
-      summary: lists
       operationId: nextEvents
+      parameters:
+        - in: query
+          name: start
+          description: inclusive, defaults to today
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: end
+          description: inclusive, defaults to today
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: timezone
+          description: specifies timezone for events, defaults to UTC
+          schema:
+            type: string
+        - in: query
+          name: nextToken
+          description: token pointing to next page of results
+          schema:
+            type: string
       responses:
         '200':
           description: A new access token object
@@ -113,14 +136,33 @@ components:
       properties:
         title:
           type: string
-        date:
+        location:
+          type: string
+        description:
+          type: string
+        startTime:
           type: string
           format: date-time
+        endTime:
+          type: string
+          format: date-time
+        internalAttendeesOnly:
+          type: boolean
+        attendees:
+          type: array
+          items:
+            type: string
+            format: email
 
     NextEvents:
-      type: array
-      items:
-        $ref: '#/components/schemas/Event'
+      type: object
+      properties:
+        nextToken:
+          type: string
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/Event'
 
 
   responses:
