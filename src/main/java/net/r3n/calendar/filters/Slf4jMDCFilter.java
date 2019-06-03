@@ -3,7 +3,6 @@ package net.r3n.calendar.filters;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
-import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
 import org.slf4j.MDC;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -25,10 +24,6 @@ public class Slf4jMDCFilter extends OncePerRequestFilter {
   private static final String DEFAULT_RESPONSE_TOKEN_HEADER = "X-Request-ID";
   private static final String DEFAULT_MDC_UUID_TOKEN_KEY = "request_id";
 
-  private final String mdcTokenKey = DEFAULT_MDC_UUID_TOKEN_KEY;
-  private final String requestHeader = DEFAULT_RESPONSE_TOKEN_HEADER;
-  private final String responseHeader = DEFAULT_RESPONSE_TOKEN_HEADER;
-
   @Override
   protected void doFilterInternal(
     final HttpServletRequest request,
@@ -36,16 +31,15 @@ public class Slf4jMDCFilter extends OncePerRequestFilter {
     final FilterChain filterChain) throws ServletException, IOException
   {
     final String token;
-    if (!StringUtils.isEmpty(requestHeader) && !StringUtils.isEmpty(request.getHeader(requestHeader))) {
-      token = request.getHeader(requestHeader);
+    if (request.getHeader(DEFAULT_RESPONSE_TOKEN_HEADER) != null) {
+      token = request.getHeader(DEFAULT_RESPONSE_TOKEN_HEADER);
     } else {
       token = UUID.randomUUID().toString().toLowerCase();
       log.info("created request_id: {}", token);
     }
-    if (!StringUtils.isEmpty(responseHeader)) {
-      response.addHeader(responseHeader, token);
-    }
-    try(MDC.MDCCloseable mdc = MDC.putCloseable(mdcTokenKey, token)) {
+    // add request-id to response header
+    response.addHeader(DEFAULT_RESPONSE_TOKEN_HEADER, token);
+    try(MDC.MDCCloseable mdc = MDC.putCloseable(DEFAULT_MDC_UUID_TOKEN_KEY, token)) {
       filterChain.doFilter(request, response);
     }
   }

@@ -8,6 +8,7 @@ import com.google.api.services.calendar.model.Events;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.r3n.calendar.client.google.CalendarFactory;
+import net.r3n.calendar.filters.AccessTokenFilter;
 import net.r3n.calendar.generated.api.EventsApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -48,9 +49,8 @@ public class EventsApiImpl implements EventsApi {
 
   @Override
   public ResponseEntity<List<net.r3n.calendar.generated.model.Event>> nextEvents() {
-    final Credential credential =
-      (Credential) request.getAttribute("credential");
-
+    // need valid credentials to continue
+    final Credential credential = AccessTokenFilter.getCredential(request);
     if (credential == null) {
       return new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }

@@ -4,18 +4,17 @@ import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import javax.annotation.CheckForNull;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.security.GeneralSecurityException;
 
 @Slf4j
 @Component
@@ -24,9 +23,23 @@ import java.security.GeneralSecurityException;
 public class AccessTokenFilter extends OncePerRequestFilter {
   private static final String AUTH_HEADER = "Authorization";
   private static final String BEARER_PREFIX = "Bearer ";
+  private static final String REQUEST_CRED_ATTR = "credential";
 
   @Autowired private final GoogleAuthorizationCodeFlow flow;
 
+  @CheckForNull
+  public static Credential getCredential(final HttpServletRequest request) {
+      return (Credential) request.getAttribute(REQUEST_CRED_ATTR);
+  }
+
+  private static void setCredential(
+    final HttpServletRequest request,
+    final Credential credential)
+  {
+    request.setAttribute(REQUEST_CRED_ATTR, credential);
+  }
+
+  @CheckForNull
   private String getBearerToken(final HttpServletRequest request) {
     final String bearer = request.getHeader(AUTH_HEADER);
     return bearer != null && bearer.startsWith(BEARER_PREFIX)
@@ -49,7 +62,7 @@ public class AccessTokenFilter extends OncePerRequestFilter {
         return; // finish chain
       }
       final Credential credential = flow.loadCredential(token);
-      request.setAttribute("credential", credential);
+      setCredential(request, credential);
     } catch (IOException e) {
       log.error("credential failed to load for token: {}", token, e);
     } finally {
