@@ -44,15 +44,21 @@ public class EventsApiImpl implements EventsApi {
       .atTime(LocalTime.MIDNIGHT).atZone(zone).toInstant();
   }
 
-  private static ListEvents transform(final InternalEvents events) {
+  private static ListEvents transform(
+    final InternalEvents events,
+    final ZoneId outputZone)
+  {
     return new ListEvents()
       .nextToken(events.getNextToken())
       .events(events.getEvents()
         .stream()
         .map(e -> {
-          final OffsetDateTime startTime = e.getStartTime().toOffsetDateTime();
-          final OffsetDateTime endTime = e.getEndTime().toOffsetDateTime();
+          final OffsetDateTime startTime = e.getStartTime()
+            .withZoneSameInstant(outputZone).toOffsetDateTime();
+          final OffsetDateTime endTime = e.getEndTime()
+            .withZoneSameInstant(outputZone).toOffsetDateTime();
           return new Event()
+            .id(e.getId())
             .startTime(startTime)
             .endTime(endTime)
             .description(e.getDescription())
@@ -85,6 +91,7 @@ public class EventsApiImpl implements EventsApi {
         : ZoneId.of(timezone);
 
       log.debug("setting times");
+      // defaults to start of today or end of today, resp.
       final Instant start = startOfDay(startDate, zone);
       final Instant end = endOfDay(endDate, zone);
 
@@ -93,12 +100,13 @@ public class EventsApiImpl implements EventsApi {
         eventsLookup.getByDate(start, end, nextToken);
 
       log.debug("transforming output");
-      final ListEvents response = transform(events);
+      final ListEvents response = transform(events, zone);
       return new ResponseEntity<>(response, HttpStatus.OK);
 
     } catch (UnauthorizedUserException e) {
       return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     } catch (DateTimeException e) {
+      log.error("failed to parse time or timezone", e);
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     } catch (Exception e) {
       log.error("failed to fetch items", e);

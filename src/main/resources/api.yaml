@@ -76,13 +76,13 @@ paths:
       parameters:
         - in: query
           name: start
-          description: inclusive, defaults to today
+          description: inclusive, defaults to start of today
           schema:
             type: string
             format: date
         - in: query
           name: end
-          description: inclusive, defaults to today
+          description: inclusive, defaults to end of today
           schema:
             type: string
             format: date
@@ -134,6 +134,8 @@ components:
     Event:
       type: object
       properties:
+        id:
+          type: string
         title:
           type: string
         location:
