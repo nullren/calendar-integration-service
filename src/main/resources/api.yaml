@@ -49,6 +49,9 @@ paths:
       operationId: newAuthorization
       description: >-
         This API will return a URI to Google to complete access authorization.
+        Chances are, if you're using this locally or testing just the API, you
+        will need to copy and paste into a browser that you can login to your
+        Google account with.
       responses:
         '200':
           description: A new authorization object
@@ -125,13 +128,15 @@ paths:
       parameters:
         - in: query
           name: start
-          description: local ISO date/date time, defaults to start of today
+          description: >-
+            local ISO date (eg, 2019-05-22) inclusive
           schema:
             type: string
             format: date
         - in: query
           name: end
-          description: local ISO date/date time, defaults to end of today
+          description: >-
+            local ISO date (eg, 2019-05-22) inclusive
           schema:
             type: string
             format: date

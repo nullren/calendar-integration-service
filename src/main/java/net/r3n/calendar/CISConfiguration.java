@@ -67,14 +67,8 @@ public class CISConfiguration {
         } catch (DateTimeParseException e) {
           log.debug("date not ISO_DATE format");
         }
-
-        try {
-          return LocalDate.parse(text, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        } catch (DateTimeParseException e) {
-          log.debug("date not ISO_LOCAL_DATE_TIME format");
-        }
-
-        return null;
+        log.debug("defaulting \"{}\" to today", text);
+        return LocalDate.now();
       }
 
       @Override

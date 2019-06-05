@@ -42,7 +42,7 @@ public class EventApiImpl implements EventApi {
 
   private static Instant endOfDay(final LocalDate date, final ZoneId zone) {
     return Optional.ofNullable(date).orElse(LocalDate.now())
-      .atTime(LocalTime.MIDNIGHT).atZone(zone).toInstant();
+      .atTime(LocalTime.MAX).atZone(zone).toInstant();
   }
 
   private static Event toApiEvent(
