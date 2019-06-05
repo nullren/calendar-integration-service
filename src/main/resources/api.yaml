@@ -8,9 +8,16 @@ info:
   description: API to integrate with Google's calendar service
   version: "0.0.1"
   title: Calendar Integration Service
+tags:
+  - name: meta
+    description: APIs related to OAuth2, configuration, and setup
+  - name: cis
+    description: APIs related to calendar integration service
 paths:
   /echo:
     get:
+      tags:
+        - meta
       summary: repeats back what you send with the current time stamp
       operationId: echo
       description: >-
@@ -36,6 +43,8 @@ paths:
 
   /authorize:
     post:
+      tags:
+        - meta
       summary: set up new oauth access
       operationId: newAuthorization
       description: >-
@@ -50,6 +59,8 @@ paths:
 
   /authorize/google:
     get:
+      tags:
+        - meta
       summary: presents API tokens after successful Google OAuth response
       operationId: googleOauthCallback
       parameters:
@@ -71,6 +82,8 @@ paths:
 
   /event:
     put:
+      tags:
+        - cis
       summary: update an existing event
       security:
         - bearerAuth: []
@@ -103,6 +116,8 @@ paths:
 
   /event/list:
     get:
+      tags:
+        - cis
       summary: lists events for given date range (or today)
       security:
         - bearerAuth: []
