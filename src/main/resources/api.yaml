@@ -1,7 +1,9 @@
 openapi: 3.0.0
 servers:
-  - description: Local deployment
-    url: http://localhost:5000
+  - description: heroku deployment
+    url: https://shrouded-fjord-98511.herokuapp.com/
+  - description: local deployment
+    url: http://localhost:8080
 info:
   description: API to integrate with Google's calendar service
   version: "0.0.1"
