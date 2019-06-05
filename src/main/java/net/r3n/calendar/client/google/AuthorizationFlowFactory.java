@@ -18,7 +18,7 @@ import java.util.List;
 @Component
 public class AuthorizationFlowFactory implements FactoryBean<GoogleAuthorizationCodeFlow> {
   private static final List<String> SCOPES =
-    Collections.singletonList(CalendarScopes.CALENDAR_READONLY);
+    Collections.singletonList(CalendarScopes.CALENDAR_EVENTS);
 
   @Autowired private final NetHttpTransport netHttpTransport;
   @Autowired private final JsonFactory jsonFactory;

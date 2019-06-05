@@ -27,4 +27,12 @@ public class DateUtils {
     final Instant instant = Instant.ofEpochMilli(time.getValue());
     return instant.atZone(zone);
   }
+
+  public static DateTime toDateTime(final Instant instant) {
+    return new DateTime(instant.toEpochMilli());
+  }
+
+  public static EventDateTime toEventDateTime(final ZonedDateTime zdt) {
+    return new EventDateTime().setDateTime(toDateTime(zdt.toInstant()));
+  }
 }
