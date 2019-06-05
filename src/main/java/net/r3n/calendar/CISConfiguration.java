@@ -38,6 +38,7 @@ public class CISConfiguration {
   }
 
   @Bean
+  // TODO: use shared, persistent data store
   public DataStoreFactory getDataStoreFactory() throws IOException {
     return new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH));
   }
