@@ -3,7 +3,7 @@ package net.r3n.calendar.api;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.r3n.calendar.errors.UnauthorizedUserException;
-import net.r3n.calendar.generated.api.EventsApi;
+import net.r3n.calendar.generated.api.EventApi;
 import net.r3n.calendar.generated.model.Event;
 import net.r3n.calendar.generated.model.ListEvents;
 import net.r3n.calendar.logic.EventsLookup;
@@ -30,7 +30,7 @@ import static net.r3n.calendar.api.AccessTokenUtils.getBearerToken;
 @Slf4j
 @RequiredArgsConstructor
 @Controller
-public class EventsApiImpl implements EventsApi {
+public class EventApiImpl implements EventApi {
   @Autowired private final HttpServletRequest request;
   @Autowired private final EventsLookupFactory eventsLookupFactory;
 
@@ -112,5 +112,11 @@ public class EventsApiImpl implements EventsApi {
       log.error("failed to fetch items", e);
       return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  @Override
+  public ResponseEntity<Event> updateEvent(@Valid Event event) {
+    log.info("updating event in calendar...");
+    return null;
   }
 }
