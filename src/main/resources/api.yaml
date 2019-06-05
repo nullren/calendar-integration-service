@@ -76,13 +76,13 @@ paths:
       parameters:
         - in: query
           name: start
-          description: inclusive, defaults to start of today
+          description: local ISO date/date time, defaults to start of today
           schema:
             type: string
             format: date
         - in: query
           name: end
-          description: inclusive, defaults to end of today
+          description: local ISO date/date time, defaults to end of today
           schema:
             type: string
             format: date
@@ -91,6 +91,7 @@ paths:
           description: specifies timezone for events, defaults to UTC
           schema:
             type: string
+            example: America/Los_Angeles
         - in: query
           name: nextToken
           description: token pointing to next page of results
